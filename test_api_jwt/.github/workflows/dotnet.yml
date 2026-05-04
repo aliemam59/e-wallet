@@ -1,0 +1,35 @@
+﻿name: .NET API CI
+
+# الـ Pipeline هيشتغل أوتوماتيك أول ما ترفع كود على فرع الـ main
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # هنشغل الكود على سيرفر لينكس سريع
+
+    steps:
+    # 1. سحب الكود بتاعك
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # 2. تسطيب .NET 8
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    # 3. تنزيل المكتبات (زي الـ MassTransit والـ EF Core)
+    - name: Restore dependencies
+      run: dotnet restore
+
+    # 4. تجميع المشروع والتأكد إن مفيش أخطاء برمجية
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+
+    # 5. تشغيل المفتش الآلي (Unit Tests)
+    - name: Test
+      run: dotnet test --no-build --configuration Release --verbosity normal
